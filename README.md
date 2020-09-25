@@ -1,3 +1,10 @@
+# Experimenting building 2d games with react-three-fiber
+
+Technologies:
+- [react-three-fiber](https://github.com/pmndrs/react-three-fiber)
+- [use-cannon](https://github.com/pmndrs/use-cannon)
+- [drei](https://github.com/pmndrs/drei)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
