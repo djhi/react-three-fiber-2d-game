@@ -14,7 +14,6 @@ export function Background({
 }) {
   const { viewport } = useThree();
   const { width, height } = viewport();
-  console.log({ width, height });
 
   const texture = useSpriteLoader(url, { size: 64 });
   const [ref] = usePlane(() => ({
