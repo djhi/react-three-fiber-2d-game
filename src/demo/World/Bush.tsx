@@ -12,6 +12,7 @@ import { CollisionGroups } from "../constants";
 import { useRegisterGameEntity } from "../GameEntities";
 import bush from "./Bush.png";
 
+const center = new Vector2(0.5, 0.5);
 export function Bush({ name, position, ...props }: any) {
   const texture = useSpriteLoader(bush, { hFrames: 1, vFrames: 1 });
   useRegisterGameEntity({
@@ -26,12 +27,12 @@ export function Bush({ name, position, ...props }: any) {
       <Sprite texture={texture} />
       <Collider
         type="Static"
-        args={[1, 1, 1]}
+        args={[0.4, 0.4, 0.4]}
         collisionFilterGroup={CollisionGroups.World}
         collisionFilterMask={CollisionGroups.Player | CollisionGroups.Enemies}
       >
-        <sprite scale={[4, 4, 4]} center={new Vector2(0.5, 0.5)}>
-          <spriteMaterial attach="material" map={texture} transparent />
+        <sprite scale={[0.5, 0.5, 0.5]} center={center}>
+          <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
     </GameObject>

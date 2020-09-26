@@ -43,11 +43,11 @@ export const useVelocity = ({
     []
   );
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     colliderApi.velocity.set(
-      velocity.current.x,
-      velocity.current.y,
-      velocity.current.z
+      velocity.current.x * delta,
+      velocity.current.y * delta,
+      velocity.current.z * delta
     );
   });
 

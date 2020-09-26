@@ -35,6 +35,7 @@ const enemyAnimations: Animations = {
   },
 };
 
+const center = new Vector2(0.5, 0.5);
 export function Bat({ name, position, ...props }: any) {
   const texture = useSpriteLoader(enemy, { hFrames: 5, vFrames: 1 });
 
@@ -43,9 +44,12 @@ export function Bat({ name, position, ...props }: any) {
       <Position initialPosition={position} />
       <Sprite texture={texture} hFrames={5} />
       <AnimationPlayer animations={enemyAnimations} defaultAnimation="fly" />
-      <Collider args={[1, 2, 4]} collisionFilterGroup={CollisionGroups.Enemies}>
-        <sprite scale={[3, 3, 3]} center={new Vector2(0.5, 0.5)}>
-          <spriteMaterial attach="material" map={texture} transparent />
+      <Collider
+        args={[0.1, 0.1, 0.1]}
+        collisionFilterGroup={CollisionGroups.Enemies}
+      >
+        <sprite scale={[0.3, 0.3, 0.5]} center={center}>
+          <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
       <Velocity />
@@ -65,10 +69,10 @@ export type BasicEnemyOptions = {
 
 export function useBasicEnemyScript({
   name = "enemy",
-  speed = 0.5,
-  maxSpeed = 7,
-  acceleration = 1.05,
-  detectionRange = 10,
+  speed = 50,
+  maxSpeed = 100,
+  acceleration = 500,
+  detectionRange = 2,
   friction = 0.95,
 }: BasicEnemyOptions) {
   const gameEntities = useGameEntities();
@@ -94,7 +98,7 @@ export function useBasicEnemyScript({
     const playerPosition = player.getPosition();
     const distance = getDistanceToTarget(position, playerPosition);
 
-    if (distance > detectionRange || distance < 3) {
+    if (distance > detectionRange || distance < 1) {
       // The enemy should not stop abruptly, we need to apply some friction
       const currentVelocity = velocityApi.getVelocity();
       currentVelocity.multiplyScalar(friction);

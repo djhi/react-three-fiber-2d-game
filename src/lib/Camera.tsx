@@ -10,6 +10,34 @@ import {
 } from "./Position";
 import { useGameObject } from "./GameObject";
 
+export function Camera({
+  position = [0, 0, 10],
+  ...props
+}: {
+  position?: Coordinates;
+  [key: string]: any;
+}) {
+  const { viewport } = useThree();
+
+  return (
+    <OrthographicCamera
+      makeDefault
+      near={0}
+      far={1000}
+      left={viewport.width / -2}
+      top={viewport.height / 2}
+      right={viewport.width / 2}
+      bottom={viewport.height / -2}
+      position={position}
+      lookAt={() => new Vector3(0, 0, 0)}
+      zoom={14}
+      {...props}
+    >
+      {null}
+    </OrthographicCamera>
+  );
+}
+
 export type CameraFollowApi = {
   enable: () => void;
   disable: () => void;
@@ -27,8 +55,8 @@ export type CameraFollowOptions = {
 export function useCameraFollow({
   initalFollowEnabled = true,
   positionApi,
-  threshold = 5,
-  speed = 15,
+  threshold = 3,
+  speed = 30,
 }: CameraFollowOptions): CameraFollowApi {
   const followEnabled = useRef(initalFollowEnabled);
   const { camera } = useThree();
@@ -70,31 +98,11 @@ export function useCameraFollow({
   return api;
 }
 
-export function Camera({ position = [0, 0, 10] }: { position?: Coordinates }) {
-  const { viewport } = useThree();
-
-  return (
-    <OrthographicCamera
-      makeDefault
-      near={0}
-      far={1000}
-      left={viewport.width / -2}
-      top={viewport.height / 2}
-      right={viewport.width / 2}
-      bottom={viewport.height / -2}
-      position={position}
-      lookAt={() => new Vector3(0, 0, 0)}
-      zoom={20}
-    >
-      {null}
-    </OrthographicCamera>
-  );
-}
-
 export type CameraFollowProps = Omit<CameraFollowOptions, "positionApi"> & {
   name?: string;
   positionName?: string;
 };
+
 export function CameraFollow({
   name = "cameraFollow",
   positionName = "position",

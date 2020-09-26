@@ -24,6 +24,7 @@ import { useRegisterGameEntity } from "../GameEntities";
 import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
 
+const center = new Vector2(0.5, 0.5);
 export function Player({ name, position, ...props }: any) {
   const texture = useSpriteLoader(player, { hFrames: 60, vFrames: 1 });
 
@@ -33,9 +34,12 @@ export function Player({ name, position, ...props }: any) {
       <Sprite texture={texture} hFrames={60} />
       <AnimationPlayer animations={playerAnimationsMap} />
       <Inputs />
-      <Collider args={[3, 3, 3]} collisionFilterGroup={CollisionGroups.Player}>
-        <sprite scale={[8, 8, 8]} center={new Vector2(0.5, 0.5)}>
-          <spriteMaterial attach="material" map={texture} transparent />
+      <Collider
+        args={[0.1, 0.1, 0.1]}
+        collisionFilterGroup={CollisionGroups.Player}
+      >
+        <sprite center={center}>
+          <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
       <Velocity />
@@ -56,14 +60,13 @@ export type PlayerScriptOptions = {
 
 export const usePlayerScript = ({
   name = "player",
-  speed = 1,
-  maxSpeed = 10,
-  rollSpeed = 20,
-  acceleration = 1.1,
-  friction = 0.95,
+  maxSpeed = 150,
+  rollSpeed = 300,
+  acceleration = 500,
+  friction = 0.8,
 }: PlayerScriptOptions) => {
   const state = useRef<"move" | "attack" | "roll">("move");
-  const currentSpeed = useRef(speed);
+  const currentSpeed = useRef(1);
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
   const gameObject = useGameObject();
@@ -125,7 +128,7 @@ export const usePlayerScript = ({
 
           if (currentSpeed.current < maxSpeed) {
             currentSpeed.current = Math.abs(
-              (currentSpeed.current || speed) * acceleration
+              (currentSpeed.current || 1) * acceleration
             );
           }
         } else {

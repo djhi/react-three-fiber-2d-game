@@ -14,6 +14,8 @@ import { Bat } from "./Enemies/Bat";
 function Game() {
   return (
     <Canvas>
+      <ambientLight />
+
       <Suspense fallback={null}>
         <GameEntitiesProvider>
           <Camera />
@@ -32,11 +34,11 @@ function Scene() {
           url={grassBackground}
           collisionFilterGroup={CollisionGroups.Ignore}
         />
-        <Bush name="bush1" position={[5, 10, 0]} />
-        <Bush name="bush2" position={[-10, -10, 0]} />
+        <Bush name="bush1" position={[1, 2, 0]} />
+        <Bush name="bush2" position={[-1, -2, 0]} />
         <Player name="player" position={[0, 0, 0]} />
         {Array.from(Array(30).keys()).map((_, index) => {
-          const base = 10 + Math.random() * 10;
+          const base = 2 + Math.random() * 2;
           const x = Math.random() > 0.5 ? base : -base;
           const y = Math.random() > 0.5 ? base : -base;
 
@@ -48,7 +50,6 @@ function Scene() {
             />
           );
         })}
-        <ambientLight intensity={1} />
       </Physics>
     </scene>
   );

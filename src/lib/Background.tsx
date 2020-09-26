@@ -13,6 +13,9 @@ export function Background({
   [key: string]: any;
 }) {
   const { viewport } = useThree();
+  const { width, height } = viewport();
+  console.log({ width, height });
+
   const texture = useSpriteLoader(url, { size: 64 });
   const [ref] = usePlane(() => ({
     mass: 0,
@@ -21,14 +24,8 @@ export function Background({
 
   return (
     // @ts-ignore
-    <Plane
-      ref={ref}
-      name="Backgroud"
-      scale={[viewport.width, viewport.height, 0]}
-    >
-      <meshBasicMaterial attach="material">
-        <primitive attach="map" object={texture} />
-      </meshBasicMaterial>
+    <Plane ref={ref} name="Backgroud" scale={[width / 2, height / 2, 1]}>
+      <meshBasicMaterial attach="material" map={texture} />
     </Plane>
   );
 }
