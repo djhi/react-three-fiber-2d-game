@@ -8,12 +8,20 @@ import {
   getDistanceToTarget,
   PositionApi,
 } from "./Position";
+import { useGameObject } from "./GameObject";
 
-export type UseCameraFollowApi = {
+export type CameraFollowApi = {
   enable: () => void;
   disable: () => void;
   toggle: () => void;
   set: (enabled: boolean) => void;
+};
+
+export type CameraFollowOptions = {
+  initalFollowEnabled?: boolean;
+  positionApi: PositionApi;
+  threshold?: number;
+  speed?: number;
 };
 
 export function useCameraFollow({
@@ -21,12 +29,7 @@ export function useCameraFollow({
   positionApi,
   threshold = 5,
   speed = 15,
-}: {
-  initalFollowEnabled?: boolean;
-  positionApi: PositionApi;
-  threshold?: number;
-  speed?: number;
-}): UseCameraFollowApi {
+}: CameraFollowOptions): CameraFollowApi {
   const followEnabled = useRef(initalFollowEnabled);
   const { camera } = useThree();
 
@@ -46,7 +49,7 @@ export function useCameraFollow({
     camera.translateOnAxis(direction, speed * delta);
   });
 
-  const api = useMemo<UseCameraFollowApi>(
+  const api = useMemo<CameraFollowApi>(
     () => ({
       enable: () => {
         followEnabled.current = true;
@@ -86,4 +89,21 @@ export function Camera({ position = [0, 0, 10] }: { position?: Coordinates }) {
       {null}
     </OrthographicCamera>
   );
+}
+
+export type CameraFollowProps = Omit<CameraFollowOptions, "positionApi"> & {
+  name?: string;
+  positionName?: string;
+};
+export function CameraFollow({
+  name = "cameraFollow",
+  positionName = "position",
+  ...props
+}: CameraFollowProps) {
+  const gameObject = useGameObject();
+  const positionApi = gameObject.getComponent<PositionApi>(positionName);
+  const api = useCameraFollow({ positionApi, ...props });
+
+  gameObject.addComponent(name, api);
+  return null;
 }

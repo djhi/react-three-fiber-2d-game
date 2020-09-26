@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { Api } from "use-cannon";
 import { useFrame } from "react-three-fiber";
 import { PositionApi, Coordinates, getDirectionToTarget } from "./Position";
+import { useGameObject } from "./GameObject";
 
 export type VelocityApi = {
   getVelocity(): Vector3;
@@ -12,7 +13,7 @@ export type VelocityApi = {
 
 export type VelocityOptions = {
   positionApi: PositionApi;
-  meshApi: Api[1];
+  colliderApi: Api[1];
 };
 
 export function moveTowards(
@@ -29,7 +30,7 @@ export function moveTowards(
 
 export const useVelocity = ({
   positionApi,
-  meshApi,
+  colliderApi,
 }: VelocityOptions): VelocityApi => {
   const velocity = useRef(new Vector3(0, 0, 0));
   const api = useMemo<VelocityApi>(
@@ -43,7 +44,7 @@ export const useVelocity = ({
   );
 
   useFrame(() => {
-    meshApi.velocity.set(
+    colliderApi.velocity.set(
       velocity.current.x,
       velocity.current.y,
       velocity.current.z
@@ -51,7 +52,7 @@ export const useVelocity = ({
   });
 
   React.useEffect(() => {
-    const unsubscribe = meshApi.position.subscribe((newPosition) => {
+    const unsubscribe = colliderApi.position.subscribe((newPosition) => {
       if (!positionApi) {
         return;
       }
@@ -64,3 +65,24 @@ export const useVelocity = ({
 
   return api;
 };
+
+export type VelocityProps = {
+  name?: string;
+  positionName?: string;
+  colliderName?: string;
+};
+
+export function Velocity({
+  name = "velocity",
+  positionName = "position",
+  colliderName = "collider",
+  ...props
+}: VelocityProps) {
+  const gameObject = useGameObject();
+  const positionApi = gameObject.getComponent<PositionApi>(positionName);
+  const colliderApi = gameObject.getComponent<Api[1]>(colliderName);
+  const api = useVelocity({ positionApi, colliderApi, ...props });
+  useGameObject().addComponent(name, api);
+
+  return null;
+}

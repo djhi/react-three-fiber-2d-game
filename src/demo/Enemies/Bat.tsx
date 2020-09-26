@@ -1,19 +1,21 @@
 import React, { useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Vector2, Vector3 } from "three";
-import { useBox } from "use-cannon";
 
 import {
+  AnimationPlayer,
   Animations,
+  Collider,
+  GameObject,
   getDistanceToTarget,
   getVector,
   moveTowards,
+  Position,
   PositionApi,
-  useAnimationPlayer,
-  usePosition,
-  useSprite,
+  Sprite,
+  useGameObject,
   useSpriteLoader,
-  useVelocity,
+  Velocity,
   VelocityApi,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
@@ -34,68 +36,53 @@ const enemyAnimations: Animations = {
 };
 
 export function Bat({ name, position, ...props }: any) {
-  const positionApi = usePosition({ initialPosition: position });
   const texture = useSpriteLoader(enemy, { hFrames: 5, vFrames: 1 });
-  const spriteApi = useSprite({ texture, hFrames: 5 });
-  useAnimationPlayer({
-    animations: enemyAnimations,
-    spriteApi,
-    defaultAnimation: "fly",
-  });
 
-  const [ref, api] = useBox(() => ({
-    type: "Dynamic",
-    mass: 1,
-    args: [1, 2, 4],
-    fixedRotation: true,
-    collisionFilterGroup: CollisionGroups.Enemies,
-    position,
-    ...props,
-  }));
+  return (
+    <GameObject name={name}>
+      <Position initialPosition={position} />
+      <Sprite texture={texture} hFrames={5} />
+      <AnimationPlayer animations={enemyAnimations} defaultAnimation="fly" />
+      <Collider args={[1, 2, 4]} collisionFilterGroup={CollisionGroups.Enemies}>
+        <sprite scale={[3, 3, 3]} center={new Vector2(0.5, 0.5)}>
+          <spriteMaterial attach="material" map={texture} transparent />
+        </sprite>
+      </Collider>
+      <Velocity />
+      <BasicEnemyScript name={name} />
+    </GameObject>
+  );
+}
 
-  const velocityApi = useVelocity({ positionApi, meshApi: api });
+export type BasicEnemyOptions = {
+  name?: string;
+  speed?: number;
+  maxSpeed?: number;
+  detectionRange?: number;
+  acceleration?: number;
+  friction?: number;
+};
+
+export function useBasicEnemyScript({
+  name = "enemy",
+  speed = 0.5,
+  maxSpeed = 7,
+  acceleration = 1.05,
+  detectionRange = 10,
+  friction = 0.95,
+}: BasicEnemyOptions) {
+  const gameEntities = useGameEntities();
+  const currentSpeed = useRef(speed);
+  const gameObject = useGameObject();
+
+  const positionApi = gameObject.getComponent<PositionApi>("position");
+  const velocityApi = gameObject.getComponent<VelocityApi>("velocity");
 
   useRegisterGameEntity({
     name,
     type: "enemy",
     getPosition: () => getVector(positionApi.getPosition()),
   });
-  useBasicEnemy({
-    positionApi,
-    velocityApi,
-  });
-
-  return (
-    <sprite
-      name={name}
-      ref={ref}
-      scale={[3, 3, 3]}
-      center={new Vector2(0.5, 0.5)}
-    >
-      <spriteMaterial attach="material" map={texture} transparent />
-    </sprite>
-  );
-}
-
-export function useBasicEnemy({
-  speed = 0.5,
-  maxSpeed = 7,
-  acceleration = 1.05,
-  detectionRange = 10,
-  friction = 0.95,
-  positionApi,
-  velocityApi,
-}: {
-  speed?: number;
-  maxSpeed?: number;
-  detectionRange?: number;
-  acceleration?: number;
-  friction?: number;
-  positionApi: PositionApi;
-  velocityApi: VelocityApi;
-}) {
-  const gameEntities = useGameEntities();
-  const currentSpeed = useRef(speed);
 
   useFrame(() => {
     const player = gameEntities.getEntity("player");
@@ -131,4 +118,9 @@ export function useBasicEnemy({
       }
     }
   });
+}
+
+export function BasicEnemyScript(props: BasicEnemyOptions) {
+  useBasicEnemyScript(props);
+  return null;
 }

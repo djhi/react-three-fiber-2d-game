@@ -1,19 +1,22 @@
-import React, { useMemo, useRef } from "react";
+import React, { useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Vector2, Vector3 } from "three";
-import { useBox } from "use-cannon";
 
 import {
+  AnimationPlayer,
   AnimationPlayerApi,
+  CameraFollow,
+  Collider,
+  GameObject,
   getVector,
+  Inputs,
   InputsApi,
-  useAnimationPlayer,
-  useCameraFollow,
-  useInputs,
-  usePosition,
-  useSprite,
+  Position,
+  PositionApi,
+  Sprite,
+  useGameObject,
   useSpriteLoader,
-  useVelocity,
+  Velocity,
   VelocityApi,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
@@ -22,75 +25,61 @@ import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
 
 export function Player({ name, position, ...props }: any) {
-  const animations = useMemo(() => playerAnimationsMap, []);
-  const positionApi = usePosition({ initialPosition: position });
   const texture = useSpriteLoader(player, { hFrames: 60, vFrames: 1 });
-  const spriteApi = useSprite({ texture, hFrames: 60 });
-  const animationPlayerApi = useAnimationPlayer({ animations, spriteApi });
-  const inputsApi = useInputs({});
 
-  const [ref, api] = useBox(() => ({
-    type: "Dynamic",
-    mass: 1,
-    args: [3, 3, 3],
-    fixedRotation: true,
-    collisionFilterGroup: CollisionGroups.Player,
-    position,
-    ...props,
-    // onCollide: (event) => console.log(event),
-  }));
+  return (
+    <GameObject name={name}>
+      <Position initialPosition={position} />
+      <Sprite texture={texture} hFrames={60} />
+      <AnimationPlayer animations={playerAnimationsMap} />
+      <Inputs />
+      <Collider args={[3, 3, 3]} collisionFilterGroup={CollisionGroups.Player}>
+        <sprite scale={[8, 8, 8]} center={new Vector2(0.5, 0.5)}>
+          <spriteMaterial attach="material" map={texture} transparent />
+        </sprite>
+      </Collider>
+      <Velocity />
+      <CameraFollow />
+      <PlayerScript name={name} />
+    </GameObject>
+  );
+}
 
-  const velocityApi = useVelocity({ positionApi, meshApi: api });
+export type PlayerScriptOptions = {
+  name?: string;
+  speed?: number;
+  maxSpeed?: number;
+  rollSpeed?: number;
+  acceleration?: number;
+  friction?: number;
+};
 
-  usePlayer({
-    animationPlayerApi,
-    inputsApi,
-    velocityApi,
-  });
+export const usePlayerScript = ({
+  name = "player",
+  speed = 1,
+  maxSpeed = 10,
+  rollSpeed = 20,
+  acceleration = 1.1,
+  friction = 0.95,
+}: PlayerScriptOptions) => {
+  const state = useRef<"move" | "attack" | "roll">("move");
+  const currentSpeed = useRef(speed);
+  const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
+  const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
+  const gameObject = useGameObject();
+
+  const positionApi = gameObject.getComponent<PositionApi>("position");
+  const inputsApi = gameObject.getComponent<InputsApi>("inputs");
+  const velocityApi = gameObject.getComponent<VelocityApi>("velocity");
+  const animationPlayerApi = gameObject.getComponent<AnimationPlayerApi>(
+    "animationPlayer"
+  );
 
   useRegisterGameEntity({
     name,
     type: "player",
     getPosition: () => getVector(positionApi.getPosition()),
   });
-
-  useCameraFollow({ positionApi });
-
-  return (
-    <sprite
-      name={name}
-      ref={ref}
-      scale={[8, 8, 8]}
-      center={new Vector2(0.5, 0.5)}
-    >
-      <spriteMaterial attach="material" map={texture} transparent />
-    </sprite>
-  );
-}
-
-export const usePlayer = ({
-  speed = 1,
-  maxSpeed = 10,
-  rollSpeed = 20,
-  acceleration = 1.1,
-  friction = 0.95,
-  inputsApi,
-  velocityApi,
-  animationPlayerApi,
-}: {
-  speed?: number;
-  maxSpeed?: number;
-  rollSpeed?: number;
-  acceleration?: number;
-  friction?: number;
-  inputsApi: InputsApi;
-  velocityApi: VelocityApi;
-  animationPlayerApi: AnimationPlayerApi;
-}) => {
-  const state = useRef<"move" | "attack" | "roll">("move");
-  const currentSpeed = useRef(speed);
-  const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
-  const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
 
   useFrame((_, delta) => {
     switch (state.current) {
@@ -245,3 +234,8 @@ export const usePlayer = ({
     }
   });
 };
+
+export function PlayerScript(props: PlayerScriptOptions) {
+  usePlayerScript(props);
+  return null;
+}

@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { Vector3 } from "three";
+import { useGameObject } from "./GameObject";
 
 export type PositionUpdatedCallback = (position: number[]) => void;
 
@@ -64,3 +65,13 @@ export const usePosition = ({
 
   return api;
 };
+
+export type PositionProps = PositionOptions & { name?: string };
+
+export function Position({ name = "position", ...props }: PositionProps) {
+  const api = usePosition(props);
+
+  useGameObject().addComponent(name, api);
+
+  return null;
+}

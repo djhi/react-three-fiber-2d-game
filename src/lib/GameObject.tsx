@@ -2,7 +2,7 @@ import * as React from "react";
 import { ReactNode, useMemo, useRef, createContext, useContext } from "react";
 
 type RegisterComponent = <T>(name: string, value: T) => void;
-type GetComponent = <T>(name: string) => T | null;
+type GetComponent = <T>(name: string) => T;
 
 type GameObjectContextValue = {
   addComponent: RegisterComponent;
@@ -13,7 +13,9 @@ const GameObjectContext = createContext<GameObjectContextValue>({
   addComponent: () => {
     /* Do nothing */
   },
-  getComponent: () => null,
+  getComponent: () => {
+    throw new Error("Invalid context");
+  },
 });
 
 export function GameObject({

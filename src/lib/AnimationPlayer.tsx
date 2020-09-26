@@ -3,6 +3,7 @@ import { useFrame } from "react-three-fiber";
 import { get } from "lodash";
 
 import { Frame, SpriteApi } from "./Sprite";
+import { useGameObject } from "./GameObject";
 
 export type AnimationPlayerApi = {
   setAnimation: (path: string, callback?: AnimationEndCallback) => void;
@@ -90,3 +91,30 @@ export const useAnimationPlayer = ({
 
   return api;
 };
+
+export type AnimationPlayerProps = {
+  name?: string;
+  animations: Animations;
+  defaultAnimation?: string;
+  spriteName?: string;
+};
+
+export function AnimationPlayer({
+  name = "animationPlayer",
+  spriteName = "sprite",
+  ...props
+}: AnimationPlayerProps) {
+  const gameObject = useGameObject();
+  const spriteApi = gameObject.getComponent<SpriteApi>(spriteName);
+
+  if (spriteApi === null) {
+    throw new Error("Invalid sprite for AnimationPlayer");
+  }
+  const api = useAnimationPlayer({
+    spriteApi,
+    ...props,
+  });
+  useGameObject().addComponent(name, api);
+
+  return null;
+}

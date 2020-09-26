@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Texture } from "three";
+import { useGameObject } from "./GameObject";
 
 export type Frame = [number, number];
 
@@ -42,3 +43,12 @@ export const useSprite = ({
 
   return api;
 };
+
+export type SpriteProps = SpriteOptions & { name?: string };
+
+export function Sprite({ name = "sprite", ...props }: SpriteProps) {
+  const api = useSprite(props);
+  useGameObject().addComponent(name, api);
+
+  return null;
+}

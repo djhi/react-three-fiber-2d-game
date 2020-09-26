@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useGameObject } from "./GameObject";
 
 export type InputsApi = {
   isActionPressed: (action: string) => boolean;
@@ -86,3 +87,12 @@ export const useInputs = ({
 
   return api;
 };
+
+export type InputsProps = InputsOptions & { name?: string };
+
+export function Inputs({ name = "inputs", ...props }: InputsProps) {
+  const api = useInputs(props);
+  useGameObject().addComponent(name, api);
+
+  return null;
+}
