@@ -37,8 +37,9 @@ export function Player({ name, position, ...props }: any) {
       <Collider
         args={[0.1, 0.1, 0.1]}
         collisionFilterGroup={CollisionGroups.Player}
+        collisionFilterMask={CollisionGroups.World | CollisionGroups.Enemies}
       >
-        <sprite center={center}>
+        <sprite name={name} center={center}>
           <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>

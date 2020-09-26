@@ -31,7 +31,7 @@ export function Bush({ name, position, ...props }: any) {
         collisionFilterGroup={CollisionGroups.World}
         collisionFilterMask={CollisionGroups.Player | CollisionGroups.Enemies}
       >
-        <sprite scale={[0.5, 0.5, 0.5]} center={center}>
+        <sprite name={name} scale={[0.5, 0.5, 0.5]} center={center}>
           <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>

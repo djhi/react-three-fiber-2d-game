@@ -47,8 +47,13 @@ export function Bat({ name, position, ...props }: any) {
       <Collider
         args={[0.1, 0.1, 0.1]}
         collisionFilterGroup={CollisionGroups.Enemies}
+        collisionFilterMask={
+          CollisionGroups.World |
+          CollisionGroups.Player |
+          CollisionGroups.Enemies
+        }
       >
-        <sprite scale={[0.3, 0.3, 0.5]} center={center}>
+        <sprite name={name} scale={[0.3, 0.3, 0.5]} center={center}>
           <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
