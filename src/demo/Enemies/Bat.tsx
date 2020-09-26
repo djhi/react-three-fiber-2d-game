@@ -7,16 +7,17 @@ import {
   Animations,
   Collider,
   GameObject,
+  getDirectionToTarget,
   getDistanceToTarget,
   getVector,
-  moveTowards,
+  Movable,
+  MovableApi,
   Position,
   PositionApi,
   Sprite,
   useGameObject,
   useSpriteLoader,
   Velocity,
-  VelocityApi,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
 import { useGameEntities, useRegisterGameEntity } from "../GameEntities";
@@ -58,6 +59,7 @@ export function Bat({ name, position, ...props }: any) {
         </sprite>
       </Collider>
       <Velocity />
+      <Movable maxSpeed={100} acceleration={1.25} friction={0.8} />
       <BasicEnemyScript name={name} />
     </GameObject>
   );
@@ -74,18 +76,14 @@ export type BasicEnemyOptions = {
 
 export function useBasicEnemyScript({
   name = "enemy",
-  speed = 50,
-  maxSpeed = 100,
-  acceleration = 500,
   detectionRange = 2,
-  friction = 0.95,
 }: BasicEnemyOptions) {
   const gameEntities = useGameEntities();
-  const currentSpeed = useRef(speed);
   const gameObject = useGameObject();
+  const chasing = useRef(false);
 
   const positionApi = gameObject.getComponent<PositionApi>("position");
-  const velocityApi = gameObject.getComponent<VelocityApi>("velocity");
+  const movableApi = gameObject.getComponent<MovableApi>("movable");
 
   useRegisterGameEntity({
     name,
@@ -102,29 +100,14 @@ export function useBasicEnemyScript({
     const position = positionApi.getPosition();
     const playerPosition = player.getPosition();
     const distance = getDistanceToTarget(position, playerPosition);
+    const outOfRange = distance > detectionRange || distance < 1;
+    const direction = getDirectionToTarget(position, playerPosition);
 
-    if (distance > detectionRange || distance < 1) {
-      // The enemy should not stop abruptly, we need to apply some friction
-      const currentVelocity = velocityApi.getVelocity();
-      currentVelocity.multiplyScalar(friction);
-      velocityApi.setVelocity(
-        new Vector3(currentVelocity.x, currentVelocity.y, 0)
-      );
-      currentSpeed.current = 0;
+    if (outOfRange && chasing.current) {
+      movableApi.decelerateTo(direction);
     } else {
-      const newVelocity = moveTowards(
-        position,
-        playerPosition,
-        Math.min(currentSpeed.current, maxSpeed)
-      );
-
-      velocityApi.setVelocity(newVelocity);
-
-      if (currentSpeed.current < maxSpeed) {
-        currentSpeed.current = Math.abs(
-          (currentSpeed.current || speed) * acceleration
-        );
-      }
+      chasing.current = true;
+      movableApi.accelerateTo(direction);
     }
   });
 }

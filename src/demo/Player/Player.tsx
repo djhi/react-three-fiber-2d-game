@@ -11,13 +11,14 @@ import {
   getVector,
   Inputs,
   InputsApi,
+  Movable,
+  MovableApi,
   Position,
   PositionApi,
   Sprite,
   useGameObject,
   useSpriteLoader,
   Velocity,
-  VelocityApi,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
 import { useRegisterGameEntity } from "../GameEntities";
@@ -44,6 +45,7 @@ export function Player({ name, position, ...props }: any) {
         </sprite>
       </Collider>
       <Velocity />
+      <Movable maxSpeed={150} acceleration={1.25} friction={0.8} />
       <CameraFollow />
       <PlayerScript name={name} />
     </GameObject>
@@ -61,20 +63,16 @@ export type PlayerScriptOptions = {
 
 export const usePlayerScript = ({
   name = "player",
-  maxSpeed = 150,
   rollSpeed = 300,
-  acceleration = 500,
-  friction = 0.8,
 }: PlayerScriptOptions) => {
   const state = useRef<"move" | "attack" | "roll">("move");
-  const currentSpeed = useRef(1);
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
   const gameObject = useGameObject();
 
   const positionApi = gameObject.getComponent<PositionApi>("position");
   const inputsApi = gameObject.getComponent<InputsApi>("inputs");
-  const velocityApi = gameObject.getComponent<VelocityApi>("velocity");
+  const movableApi = gameObject.getComponent<MovableApi>("movable");
   const animationPlayerApi = gameObject.getComponent<AnimationPlayerApi>(
     "animationPlayer"
   );
@@ -120,26 +118,9 @@ export const usePlayerScript = ({
             animationPlayerApi.setAnimation("move.left");
           }
 
-          const newVelocity = new Vector3(
-            inputVector.x * Math.min(currentSpeed.current, maxSpeed),
-            inputVector.y * Math.min(currentSpeed.current, maxSpeed),
-            0
-          );
-          velocityApi.setVelocity(newVelocity);
-
-          if (currentSpeed.current < maxSpeed) {
-            currentSpeed.current = Math.abs(
-              (currentSpeed.current || 1) * acceleration
-            );
-          }
+          movableApi.accelerateTo(lastDirection.current);
         } else {
-          // The player should not stop abruptly, we need to apply some friction
-          const currentVelocity = velocityApi.getVelocity();
-          currentVelocity.multiplyScalar(friction);
-          velocityApi.setVelocity(
-            new Vector3(currentVelocity.x, currentVelocity.y, 0)
-          );
-          currentSpeed.current = 0;
+          movableApi.decelerateTo(lastDirection.current);
 
           if (lastDirection.current.y > 0) {
             animationPlayerApi.setAnimation("idle.up");
@@ -168,8 +149,7 @@ export const usePlayerScript = ({
           return;
         }
 
-        velocityApi.setVelocity(new Vector3(lastInputVector.current.x, 0, 0));
-        currentSpeed.current = 0;
+        movableApi.decelerateTo(lastDirection.current);
 
         if (lastDirection.current.y > 0) {
           animationPlayerApi.setAnimation("attack.up", () => {
@@ -198,14 +178,7 @@ export const usePlayerScript = ({
           return;
         }
 
-        const newVelocity = new Vector3(
-          lastDirection.current.x * rollSpeed,
-          lastDirection.current.y * rollSpeed,
-          0
-        );
-        velocityApi.setVelocity(
-          new Vector3(newVelocity.x, newVelocity.y, newVelocity.z)
-        );
+        movableApi.moveTo(lastDirection.current, rollSpeed);
 
         if (lastDirection.current.y > 0) {
           animationPlayerApi.setAnimation("roll.up", () => {
