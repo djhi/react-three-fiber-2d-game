@@ -1,5 +1,13 @@
 import { useLoader } from "react-three-fiber";
-import { RepeatWrapping, TextureLoader } from "three";
+import {
+  ImageLoader,
+  LinearMipMapLinearFilter,
+  NearestFilter,
+  RepeatWrapping,
+  RGBAFormat,
+  Texture,
+  TextureLoader,
+} from "three";
 
 type UseSpriteLoaderOptions = {
   hFrames?: number;
@@ -11,9 +19,14 @@ export function useSpriteLoader(
   url: string,
   { hFrames, vFrames, size }: UseSpriteLoaderOptions
 ) {
-  const texture = useLoader(TextureLoader, url);
+  const image = useLoader(ImageLoader, url);
+  const texture = new Texture(image);
+  texture.format = RGBAFormat;
+  texture.needsUpdate = true;
   texture.wrapS = RepeatWrapping;
   texture.wrapT = RepeatWrapping;
+  texture.minFilter = LinearMipMapLinearFilter;
+  texture.magFilter = NearestFilter;
 
   // eslint-disable-next-line eqeqeq
   if (size != undefined) {
