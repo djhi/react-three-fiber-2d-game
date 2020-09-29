@@ -6,7 +6,6 @@ import {
   RepeatWrapping,
   RGBAFormat,
   Texture,
-  TextureLoader,
 } from "three";
 
 type UseSpriteLoaderOptions = {
