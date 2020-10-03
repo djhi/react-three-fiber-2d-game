@@ -41,6 +41,7 @@ function Game() {
   );
 }
 
+const EnemiesCount = 1;
 function Scene() {
   return (
     <>
@@ -48,13 +49,12 @@ function Scene() {
         url={grassBackground}
         collisionFilterGroup={CollisionGroups.Ignore}
       />
-      <Bush name="bush1" position={[0.5, 1, 0]} />
-      <Bush name="bush2" position={[-0.5, -1, 0]} />
-      <Player name="player" position={[0, 0, 0]} />
-      <Bat name={`enemy1`} position={[1.8, 0, 0]} />
-      <Bat name={`enemy1`} position={[1.8, 0.5, 0]} />
-      <Bat name={`enemy1`} position={[1.8, -0.5, 0]} />
-      {/* {Array.from(Array(30).keys()).map((_, index) => {
+      <Bush name="bush1" position={[1, 2, 0]} />
+      <Bush name="bush2" position={[-1, -2, 0]} />
+      <Player position={[0, 0, 0]} />
+      <Bat position={[2, 0, 0]} />
+      <Bat position={[4, 0, 0]} />
+      {/* {Array.from(Array(EnemiesCount).keys()).map((_, index) => {
           const base = 2 + Math.random() * 2;
           const x = Math.random() > 0.5 ? base : -base;
           const y = Math.random() > 0.5 ? base : -base;
