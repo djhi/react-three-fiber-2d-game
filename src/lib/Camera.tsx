@@ -2,12 +2,8 @@ import React, { useMemo, useRef } from "react";
 import { useFrame, useThree } from "react-three-fiber";
 import { OrthographicCamera } from "drei";
 import { Vector3 } from "three";
-import {
-  Coordinates,
-  getDirectionToTarget,
-  getDistanceToTarget,
-  PositionApi,
-} from "./Position";
+import { Coordinates } from "./types";
+import { getDirectionToTarget, getDistanceToTarget } from "./utils";
 import { useGameObject } from "./GameObject";
 
 export function Camera({
@@ -30,7 +26,7 @@ export function Camera({
       bottom={viewport.height / -2}
       position={position}
       lookAt={() => new Vector3(0, 0, 0)}
-      zoom={14}
+      zoom={150}
       {...props}
     >
       {null}
@@ -47,17 +43,18 @@ export type CameraFollowApi = {
 
 export type CameraFollowOptions = {
   initalFollowEnabled?: boolean;
-  positionApi: PositionApi;
+  name?: string;
   threshold?: number;
   speed?: number;
 };
 
 export function useCameraFollow({
+  name = "cameraFollow",
   initalFollowEnabled = true,
-  positionApi,
   threshold = 3,
   speed = 30,
 }: CameraFollowOptions): CameraFollowApi {
+  const gameObject = useGameObject();
   const followEnabled = useRef(initalFollowEnabled);
   const { camera } = useThree();
 
@@ -65,7 +62,7 @@ export function useCameraFollow({
     if (!followEnabled) {
       return;
     }
-    const targetPosition = positionApi.getPosition();
+    const targetPosition = gameObject.getPosition();
     const distance = getDistanceToTarget(camera.position, targetPosition);
     const direction = getDirectionToTarget(camera.position, targetPosition);
 
@@ -95,23 +92,11 @@ export function useCameraFollow({
     []
   );
 
+  gameObject.addComponent(name, api);
   return api;
 }
 
-export type CameraFollowProps = Omit<CameraFollowOptions, "positionApi"> & {
-  name?: string;
-  positionName?: string;
-};
-
-export function CameraFollow({
-  name = "cameraFollow",
-  positionName = "position",
-  ...props
-}: CameraFollowProps) {
-  const gameObject = useGameObject();
-  const positionApi = gameObject.getComponent<PositionApi>(positionName);
-  const api = useCameraFollow({ positionApi, ...props });
-
-  gameObject.addComponent(name, api);
+export function CameraFollow(props: CameraFollowOptions) {
+  useCameraFollow(props);
   return null;
 }

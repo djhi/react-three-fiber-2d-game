@@ -1,39 +1,46 @@
-import { cloneElement, ReactElement } from "react";
-import { BoxProps, useBox } from "use-cannon";
+import { cloneElement, ReactElement, useEffect } from "react";
+import { Api, BoxProps, useBox } from "use-cannon";
 import { useGameObject } from "./GameObject";
-import { PositionApi } from "./Position";
+import { Coordinates } from "./types";
+
+export type ColliderOptions = BoxProps & {
+  name?: string;
+};
+
+export type ColliderApi = Api[1];
 
 export const useCollider = ({
+  name = "collider",
   type = "Dynamic",
   mass = 1,
   fixedRotation = true,
   ...props
-}: BoxProps) => {
-  return useBox(() => ({
+}: ColliderOptions) => {
+  const gameObject = useGameObject();
+  const [ref, api] = useBox(() => ({
     type,
     mass,
+    position: gameObject.getPosition(),
     fixedRotation: true,
     ...props,
     // onCollide: (event) => console.log(event),
   }));
+
+  useEffect(() =>
+    api.position.subscribe((position) => {
+      gameObject.setPosition(position as Coordinates);
+    })
+  );
+  gameObject.addComponent(name, api);
+
+  return [ref, api];
 };
 
-export type ColliderProps = BoxProps & {
+export type ColliderProps = ColliderOptions & {
   children: ReactElement;
-  name?: string;
 };
 
-export function Collider({
-  name = "collider",
-  children,
-  ...props
-}: ColliderProps) {
-  const gameObject = useGameObject();
-  const positionApi = gameObject.getComponent<PositionApi>("position");
-  const [colliderRef, api] = useCollider({
-    position: positionApi.getPosition(),
-    ...props,
-  });
-  useGameObject().addComponent(name, api);
+export function Collider({ children, ...props }: ColliderProps) {
+  const [colliderRef] = useCollider(props);
   return cloneElement(children, { ref: colliderRef });
 }

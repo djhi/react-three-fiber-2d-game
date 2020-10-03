@@ -22,16 +22,24 @@ export type Animations = {
 type AnimationEndCallback = () => void;
 
 type AnimationPlayerOptions = {
+  name?: string;
+  spriteName?: string;
   animations: Animations;
   defaultAnimation?: string;
-  spriteApi: SpriteApi;
 };
 
 export const useAnimationPlayer = ({
+  name = "animationPlayer",
+  spriteName = "sprite",
   animations,
   defaultAnimation,
-  spriteApi,
 }: AnimationPlayerOptions): AnimationPlayerApi => {
+  const gameObject = useGameObject();
+  const spriteApi = gameObject.getComponent<SpriteApi>(spriteName);
+
+  if (spriteApi === null) {
+    throw new Error("Invalid sprite for AnimationPlayer");
+  }
   const currentAnimation = useRef<string | undefined>(defaultAnimation);
   const currentCallback = useRef<AnimationEndCallback | null>();
   const currentFrameDisplayTime = useRef(0);
@@ -89,32 +97,11 @@ export const useAnimationPlayer = ({
     spriteApi.setFrame(animation.frames[step.current]);
   });
 
+  gameObject.addComponent(name, api);
   return api;
 };
 
-export type AnimationPlayerProps = {
-  name?: string;
-  animations: Animations;
-  defaultAnimation?: string;
-  spriteName?: string;
-};
-
-export function AnimationPlayer({
-  name = "animationPlayer",
-  spriteName = "sprite",
-  ...props
-}: AnimationPlayerProps) {
-  const gameObject = useGameObject();
-  const spriteApi = gameObject.getComponent<SpriteApi>(spriteName);
-
-  if (spriteApi === null) {
-    throw new Error("Invalid sprite for AnimationPlayer");
-  }
-  const api = useAnimationPlayer({
-    spriteApi,
-    ...props,
-  });
-  useGameObject().addComponent(name, api);
-
+export function AnimationPlayer(props: AnimationPlayerOptions) {
+  useAnimationPlayer(props);
   return null;
 }

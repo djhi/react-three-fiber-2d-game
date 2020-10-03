@@ -9,6 +9,7 @@ export type InputsApi = {
 export type InputMap = Record<string, string>;
 
 export type InputsOptions = {
+  name?: string;
   inputMap?: InputMap;
 };
 
@@ -22,6 +23,7 @@ const DefaultInputMap = {
 };
 
 export const useInputs = ({
+  name = "inputs",
   inputMap = DefaultInputMap,
 }: InputsOptions): InputsApi => {
   const inputs = useRef<Record<string, number>>({});
@@ -85,14 +87,11 @@ export const useInputs = ({
     [inputMap]
   );
 
+  useGameObject().addComponent(name, api);
   return api;
 };
 
-export type InputsProps = InputsOptions & { name?: string };
-
-export function Inputs({ name = "inputs", ...props }: InputsProps) {
-  const api = useInputs(props);
-  useGameObject().addComponent(name, api);
-
+export function Inputs(props: InputsOptions) {
+  useInputs(props);
   return null;
 }

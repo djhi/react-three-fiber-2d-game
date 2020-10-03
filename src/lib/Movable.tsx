@@ -8,7 +8,8 @@ export type MovableOptions = {
   acceleration?: number;
   friction?: number;
   maxSpeed?: number;
-  velocityApi: VelocityApi;
+  name?: string;
+  velocityName?: string;
 };
 
 export type MovableApi = {
@@ -24,8 +25,11 @@ export const useMovable = ({
   acceleration = 1.25,
   friction = 0.8,
   maxSpeed = 100,
-  velocityApi,
+  name = "movable",
+  velocityName = "velocity",
 }: MovableOptions): MovableApi => {
+  const gameObject = useGameObject();
+  const velocityApi = gameObject.getComponent<VelocityApi>(velocityName);
   const state = useRef<State>("idle");
   const currentSpeed = useRef(50);
   const speedOverride = useRef(false);
@@ -36,10 +40,11 @@ export const useMovable = ({
   useFrame((_, delta) => {
     if (state.current === "idle") {
       currentAccelerationTime.current = 0;
+      velocityApi.setVelocity(new Vector3(0, 0, 0));
       return;
     }
-    currentAccelerationTime.current += delta * 1000;
 
+    currentAccelerationTime.current += delta * 1000;
     const newVelocity = new Vector3(
       currentDirection.current.x * currentSpeed.current,
       currentDirection.current.y * currentSpeed.current,
@@ -80,7 +85,7 @@ export const useMovable = ({
     return {
       accelerateTo: (direction) => {
         currentDirection.current = direction;
-        if (state.current !== "accelerate") {
+        if (state.current !== "accelerate" && state.current !== "move") {
           currentSpeed.current = 25;
         }
         changeState("accelerate");
@@ -102,6 +107,7 @@ export const useMovable = ({
     };
   }, []);
 
+  gameObject.addComponent(name, api);
   return api;
 };
 
@@ -109,19 +115,7 @@ function clamp(min: number, value: number, max: number) {
   return Math.min(Math.max(min, value), max);
 }
 
-export type MovableProps = Omit<MovableOptions, "velocityApi"> & {
-  name?: string;
-  velocityName?: string;
-};
-
-export function Movable({
-  name = "movable",
-  velocityName = "velocity",
-  ...props
-}: MovableProps) {
-  const gameObject = useGameObject();
-  const velocityApi = gameObject.getComponent<VelocityApi>(velocityName);
-  const api = useMovable({ velocityApi, ...props });
-  gameObject.addComponent(name, api);
+export function Movable(props: MovableOptions) {
+  useMovable(props);
   return null;
 }

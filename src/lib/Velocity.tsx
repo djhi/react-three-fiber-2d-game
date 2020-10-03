@@ -1,19 +1,14 @@
-import * as React from "react";
 import { useMemo, useRef } from "react";
 import { Vector3 } from "three";
-import { Api } from "use-cannon";
 import { useFrame } from "react-three-fiber";
-import { PositionApi, Coordinates, getDirectionToTarget } from "./Position";
+import { Coordinates } from "./types";
+import { getDirectionToTarget } from "./utils";
 import { useGameObject } from "./GameObject";
+import { ColliderApi } from "./Collider";
 
 export type VelocityApi = {
   getVelocity(): Vector3;
   setVelocity(velocity: Vector3): void;
-};
-
-export type VelocityOptions = {
-  positionApi: PositionApi;
-  colliderApi: Api[1];
 };
 
 export function moveTowards(
@@ -28,10 +23,18 @@ export function moveTowards(
   return velocity;
 }
 
+export type VelocityOptions = {
+  name?: string;
+  colliderName?: string;
+};
+
 export const useVelocity = ({
-  positionApi,
-  colliderApi,
+  name = "velocity",
+  colliderName = "collider",
 }: VelocityOptions): VelocityApi => {
+  const gameObject = useGameObject();
+  const colliderApi = gameObject.getComponent<ColliderApi>(colliderName);
+
   const velocity = useRef(new Vector3(0, 0, 0));
   const api = useMemo<VelocityApi>(
     () => ({
@@ -51,38 +54,11 @@ export const useVelocity = ({
     );
   });
 
-  React.useEffect(() => {
-    const unsubscribe = colliderApi.position.subscribe((newPosition) => {
-      if (!positionApi) {
-        return;
-      }
-
-      positionApi.setPosition(newPosition as Coordinates);
-    });
-
-    return unsubscribe;
-  });
-
+  gameObject.addComponent(name, api);
   return api;
 };
 
-export type VelocityProps = {
-  name?: string;
-  positionName?: string;
-  colliderName?: string;
-};
-
-export function Velocity({
-  name = "velocity",
-  positionName = "position",
-  colliderName = "collider",
-  ...props
-}: VelocityProps) {
-  const gameObject = useGameObject();
-  const positionApi = gameObject.getComponent<PositionApi>(positionName);
-  const colliderApi = gameObject.getComponent<Api[1]>(colliderName);
-  const api = useVelocity({ positionApi, colliderApi, ...props });
-  useGameObject().addComponent(name, api);
-
+export function Velocity(props: VelocityOptions) {
+  useVelocity(props);
   return null;
 }
