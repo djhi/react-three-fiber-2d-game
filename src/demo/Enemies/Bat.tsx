@@ -85,7 +85,7 @@ export function useBasicEnemyScript({
     const position = gameObject.getPosition();
     const playerPosition = player.getPosition();
     const distance = getDistanceToTarget(position, playerPosition);
-    const outOfRange = distance > detectionRange || distance < 1;
+    const outOfRange = distance > detectionRange || distance < 0.2;
     const direction = getDirectionToTarget(position, playerPosition);
 
     if (outOfRange && chasing.current) {

@@ -9,7 +9,7 @@ import {
   Collider,
   ColliderApi,
   GameObject,
-  GameObjectContextValue,
+  GameObjectApi,
   Inputs,
   InputsApi,
   Movable,
@@ -23,8 +23,8 @@ import { CollisionGroups } from "../constants";
 import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
 import { EnemyDeathEffectApi } from "../Effects/EnemyDeathEffect";
-import { useGameEntities } from "../../lib/GameEntities";
 import { useScene } from "../../lib/Scene";
+import { getDirectionToTarget } from "../../lib/utils";
 
 const center = new Vector2(0.5, 0.5);
 export function Player({ name = "player", position, ...props }: any) {
@@ -74,17 +74,29 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
   const handleCollision = (event: any) => {
     const eventGameObject = scene.getGameObject(
       event.body.name
-    ) as GameObjectContextValue;
+    ) as GameObjectApi;
+
     if (eventGameObject && eventGameObject.type === "enemy") {
-      const enemyDeathEffectApi = eventGameObject.getComponent<
-        EnemyDeathEffectApi
-      >("enemyDeathEffect");
-      enemyDeathEffectApi.enable(() => {
-        if (!colliderApi.ref?.current) {
-          return;
-        }
-        eventGameObject.setDisabled(true);
-      });
+      const enemyDirection = getDirectionToTarget(
+        gameObject.getPosition(),
+        eventGameObject.getPosition()
+      );
+
+      console.log(eventGameObject);
+      if (
+        lastDirection.current.equals(enemyDirection) &&
+        state.current === "attack"
+      ) {
+        const enemyDeathEffectApi = eventGameObject.getComponent<
+          EnemyDeathEffectApi
+        >("enemyDeathEffect");
+        enemyDeathEffectApi.enable(() => {
+          if (!colliderApi.ref?.current) {
+            return;
+          }
+          eventGameObject.setDisabled(true);
+        });
+      }
     }
   };
 
