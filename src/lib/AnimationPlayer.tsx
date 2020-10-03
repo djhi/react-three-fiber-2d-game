@@ -28,6 +28,15 @@ type AnimationPlayerOptions = {
   defaultAnimation?: string;
 };
 
+export function buildAnimationFromHframes(from: number, to: number): Animation {
+  return {
+    frames: Array.from(Array(to - from).keys()).map((_, index) => [
+      from + index,
+      1,
+    ]),
+  };
+}
+
 export const useAnimationPlayer = ({
   name = "animationPlayer",
   spriteName = "sprite",

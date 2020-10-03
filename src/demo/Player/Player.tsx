@@ -22,7 +22,7 @@ import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
 
 const center = new Vector2(0.5, 0.5);
-export function Player({ name, position, ...props }: any) {
+export function Player({ name = "player", position, ...props }: any) {
   const texture = useSpriteLoader(player, { hFrames: 60, vFrames: 1 });
 
   return (

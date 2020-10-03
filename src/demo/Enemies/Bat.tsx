@@ -6,6 +6,7 @@ import {
   AnimationPlayer,
   Animations,
   Collider,
+  ColliderApi,
   GameObject,
   Movable,
   MovableApi,
@@ -17,6 +18,10 @@ import {
 import { getDirectionToTarget, getDistanceToTarget } from "../../lib/utils";
 import { CollisionGroups } from "../constants";
 import { useGameEntities } from "../../lib/GameEntities";
+import {
+  EnemyDeathEffect,
+  EnemyDeathEffectApi,
+} from "../Effects/EnemyDeathEffect";
 import enemy from "./Bat.png";
 
 const enemyAnimations: Animations = {
@@ -33,6 +38,7 @@ const enemyAnimations: Animations = {
 };
 
 const center = new Vector2(0.5, 0.5);
+
 export function Bat({ name, position, ...props }: any) {
   const texture = useSpriteLoader(enemy, { hFrames: 5, vFrames: 1 });
 
@@ -55,6 +61,7 @@ export function Bat({ name, position, ...props }: any) {
       </Collider>
       <Velocity />
       <Movable maxSpeed={60} acceleration={1.25} friction={0.8} />
+      <EnemyDeathEffect />
       <BasicEnemyScript />
     </GameObject>
   );
@@ -70,8 +77,30 @@ export function useBasicEnemyScript({
   const gameEntities = useGameEntities();
   const gameObject = useGameObject();
   const chasing = useRef(false);
+  const dead = useRef(false);
 
   const movableApi = gameObject.getComponent<MovableApi>("movable");
+  const colliderApi = gameObject.getComponent<ColliderApi>("collider");
+
+  const handleCollision = (event) => {
+    if (event.body?.name === "player") {
+      const enemyDeathEffectApi = gameObject.getComponent<EnemyDeathEffectApi>(
+        "enemyDeathEffect"
+      );
+      enemyDeathEffectApi.enable(() => {
+        if (!colliderApi.ref?.current) {
+          return;
+        }
+        colliderApi.ref.current.visible = false;
+        colliderApi.ref.current.parent?.remove(colliderApi.ref.current);
+        dead.current = true;
+
+        colliderApi.removeEventListener("collide", handleCollision);
+      });
+    }
+  };
+
+  colliderApi.addEventListener("collide", handleCollision);
 
   useFrame(() => {
     const player = gameEntities.getEntity("player");
