@@ -34,11 +34,14 @@ export const useCollider = ({
     },
   }));
 
-  useEffect(() =>
-    api.position.subscribe((position) => {
-      gameObject.setPosition(position as Coordinates);
-    })
+  useEffect(
+    () =>
+      api.position.subscribe((position) => {
+        gameObject.setPosition(position as Coordinates);
+      }),
+    [api.position, gameObject]
   );
+
   const colliderApi = {
     ref,
     ...api,
