@@ -10,6 +10,7 @@ export type SpriteApi = {
 };
 
 export type SpriteOptions = {
+  name?: string;
   texture: Texture;
   hFrames?: number;
   vFrames?: number;
@@ -17,6 +18,7 @@ export type SpriteOptions = {
 };
 
 export const useSprite = ({
+  name = "sprite",
   frame = [0, 0],
   hFrames = 1,
   vFrames = 1,
@@ -41,14 +43,11 @@ export const useSprite = ({
     texture.offset.y = currentFrame.current[1] / vFrames;
   });
 
+  useGameObject().addComponent(name, api);
   return api;
 };
 
-export type SpriteProps = SpriteOptions & { name?: string };
-
-export function Sprite({ name = "sprite", ...props }: SpriteProps) {
-  const api = useSprite(props);
-  useGameObject().addComponent(name, api);
-
+export function Sprite(props: SpriteOptions) {
+  useSprite(props);
   return null;
 }

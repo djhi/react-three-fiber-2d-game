@@ -1,19 +1,5 @@
-import { useMemo, useRef } from "react";
 import { Vector3 } from "three";
-import { useGameObject } from "./GameObject";
-
-export type PositionUpdatedCallback = (position: number[]) => void;
-
-export type Coordinates = [x: number, y: number, z: number];
-
-export type PositionApi = {
-  getPosition(): Coordinates;
-  setPosition(velocity: Coordinates): void;
-};
-
-export type PositionOptions = {
-  initialPosition: Coordinates;
-};
+import { Coordinates } from "./types";
 
 export function getVector(coordinatesOrVector: Coordinates | Vector3) {
   const vector = coordinatesOrVector as Vector3;
@@ -46,32 +32,4 @@ export function getDistanceToTarget(
   const targetVector = getVector(targetCoordinates);
 
   return sourceVector.distanceTo(targetVector);
-}
-
-export const usePosition = ({
-  initialPosition,
-}: PositionOptions): PositionApi => {
-  const position = useRef(initialPosition);
-
-  const api = useMemo<PositionApi>(
-    () => ({
-      getPosition: () => position.current,
-      setPosition: (newPosition) => {
-        position.current = newPosition;
-      },
-    }),
-    []
-  );
-
-  return api;
-};
-
-export type PositionProps = PositionOptions & { name?: string };
-
-export function Position({ name = "position", ...props }: PositionProps) {
-  const api = usePosition(props);
-
-  useGameObject().addComponent(name, api);
-
-  return null;
 }

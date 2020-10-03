@@ -23,7 +23,7 @@ export function Background({
 
   return (
     // @ts-ignore
-    <Plane ref={ref} name="Backgroud" scale={[width / 2, height / 2, 1]}>
+    <Plane ref={ref} name="Backgroud" scale={[320 / 2, 180 / 2, 1]}>
       <meshBasicMaterial attach="material" map={texture} />
     </Plane>
   );

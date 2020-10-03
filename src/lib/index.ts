@@ -5,7 +5,7 @@ export * from "./Collider";
 export * from "./GameObject";
 export * from "./Inputs";
 export * from "./Movable";
-export * from "./Position";
+export * from "./types";
 export * from "./Sprite";
 export * from "./Velocity";
 

@@ -8,20 +8,16 @@ import {
   CameraFollow,
   Collider,
   GameObject,
-  getVector,
   Inputs,
   InputsApi,
   Movable,
   MovableApi,
-  Position,
-  PositionApi,
   Sprite,
   useGameObject,
   useSpriteLoader,
   Velocity,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
-import { useRegisterGameEntity } from "../GameEntities";
 import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
 
@@ -30,8 +26,7 @@ export function Player({ name, position, ...props }: any) {
   const texture = useSpriteLoader(player, { hFrames: 60, vFrames: 1 });
 
   return (
-    <GameObject name={name}>
-      <Position initialPosition={position} />
+    <GameObject name={name} type="player" position={position}>
       <Sprite texture={texture} hFrames={60} />
       <AnimationPlayer animations={playerAnimationsMap} />
       <Inputs />
@@ -45,45 +40,30 @@ export function Player({ name, position, ...props }: any) {
         </sprite>
       </Collider>
       <Velocity />
-      <Movable maxSpeed={150} acceleration={1.25} friction={0.8} />
+      <Movable maxSpeed={90} acceleration={1.25} friction={0.8} />
       <CameraFollow />
-      <PlayerScript name={name} />
+      <PlayerScript />
     </GameObject>
   );
 }
 
 export type PlayerScriptOptions = {
-  name?: string;
-  speed?: number;
-  maxSpeed?: number;
   rollSpeed?: number;
-  acceleration?: number;
-  friction?: number;
 };
 
-export const usePlayerScript = ({
-  name = "player",
-  rollSpeed = 300,
-}: PlayerScriptOptions) => {
+export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
   const state = useRef<"move" | "attack" | "roll">("move");
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
   const gameObject = useGameObject();
 
-  const positionApi = gameObject.getComponent<PositionApi>("position");
   const inputsApi = gameObject.getComponent<InputsApi>("inputs");
   const movableApi = gameObject.getComponent<MovableApi>("movable");
   const animationPlayerApi = gameObject.getComponent<AnimationPlayerApi>(
     "animationPlayer"
   );
 
-  useRegisterGameEntity({
-    name,
-    type: "player",
-    getPosition: () => getVector(positionApi.getPosition()),
-  });
-
-  useFrame((_, delta) => {
+  useFrame(() => {
     switch (state.current) {
       case "move": {
         const inputVector = new Vector3(

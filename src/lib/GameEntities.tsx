@@ -6,21 +6,19 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Vector3 } from "three";
-
-export type EntityType = "world" | "player" | "enemy";
+import { Coordinates } from "./types";
 
 export type Entity = {
   name: string;
-  type: EntityType;
-  getPosition: () => Vector3;
+  type: string;
+  getPosition(): Coordinates;
 };
 
 export type GameEntitiesContextValue = {
   addEntity<T extends Entity>(entity: T): void;
   getEntity<T extends Entity>(name: string): T | null;
   removeEntity(name: string): void;
-  getEntities<T extends Entity>(type: EntityType): Record<string, T>;
+  getEntities<T extends Entity>(type: string): Record<string, T>;
 };
 
 export const GameEntitiesContext = createContext<GameEntitiesContextValue>({
@@ -44,7 +42,7 @@ export function GameEntitiesProvider({ children }: { children: ReactNode }) {
         entitiesList.current.push(entity);
         entitiesMap.current[entity.name] = entity;
       },
-      getEntity(name: string) {
+      getEntity(name) {
         return entitiesMap.current[name];
       },
       removeEntity(name) {

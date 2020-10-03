@@ -1,26 +1,22 @@
 import React, { useRef } from "react";
 import { useFrame } from "react-three-fiber";
-import { Vector2, Vector3 } from "three";
+import { Vector2 } from "three";
 
 import {
   AnimationPlayer,
   Animations,
   Collider,
   GameObject,
-  getDirectionToTarget,
-  getDistanceToTarget,
-  getVector,
   Movable,
   MovableApi,
-  Position,
-  PositionApi,
   Sprite,
   useGameObject,
   useSpriteLoader,
   Velocity,
 } from "../../lib";
+import { getDirectionToTarget, getDistanceToTarget } from "../../lib/utils";
 import { CollisionGroups } from "../constants";
-import { useGameEntities, useRegisterGameEntity } from "../GameEntities";
+import { useGameEntities } from "../../lib/GameEntities";
 import enemy from "./Bat.png";
 
 const enemyAnimations: Animations = {
@@ -41,8 +37,7 @@ export function Bat({ name, position, ...props }: any) {
   const texture = useSpriteLoader(enemy, { hFrames: 5, vFrames: 1 });
 
   return (
-    <GameObject name={name}>
-      <Position initialPosition={position} />
+    <GameObject name={name} type="enemy" position={position}>
       <Sprite texture={texture} hFrames={5} />
       <AnimationPlayer animations={enemyAnimations} defaultAnimation="fly" />
       <Collider
@@ -59,37 +54,24 @@ export function Bat({ name, position, ...props }: any) {
         </sprite>
       </Collider>
       <Velocity />
-      <Movable maxSpeed={100} acceleration={1.25} friction={0.8} />
-      <BasicEnemyScript name={name} />
+      <Movable maxSpeed={60} acceleration={1.25} friction={0.8} />
+      <BasicEnemyScript />
     </GameObject>
   );
 }
 
 export type BasicEnemyOptions = {
-  name?: string;
-  speed?: number;
-  maxSpeed?: number;
   detectionRange?: number;
-  acceleration?: number;
-  friction?: number;
 };
 
 export function useBasicEnemyScript({
-  name = "enemy",
-  detectionRange = 2,
+  detectionRange = 1.5,
 }: BasicEnemyOptions) {
   const gameEntities = useGameEntities();
   const gameObject = useGameObject();
   const chasing = useRef(false);
 
-  const positionApi = gameObject.getComponent<PositionApi>("position");
   const movableApi = gameObject.getComponent<MovableApi>("movable");
-
-  useRegisterGameEntity({
-    name,
-    type: "enemy",
-    getPosition: () => getVector(positionApi.getPosition()),
-  });
 
   useFrame(() => {
     const player = gameEntities.getEntity("player");
@@ -97,7 +79,7 @@ export function useBasicEnemyScript({
       return;
     }
 
-    const position = positionApi.getPosition();
+    const position = gameObject.getPosition();
     const playerPosition = player.getPosition();
     const distance = getDistanceToTarget(position, playerPosition);
     const outOfRange = distance > detectionRange || distance < 1;
