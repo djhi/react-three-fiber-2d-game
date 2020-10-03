@@ -11,6 +11,7 @@ import { Bush } from "./World/Bush";
 import { Player } from "./Player/Player";
 import { Bat } from "./Enemies/Bat";
 import { WebGLRendererParameters } from "three";
+import { Scene } from "../lib/Scene";
 
 const glProps: Partial<WebGLRendererParameters> = {
   antialias: false,
@@ -33,7 +34,7 @@ function Game() {
         <GameEntitiesProvider>
           <Physics gravity={[0, 0, 0]}>
             <Camera />
-            <Scene />
+            <Level1 />
           </Physics>
         </GameEntitiesProvider>
       </Suspense>
@@ -42,9 +43,9 @@ function Game() {
 }
 
 const EnemiesCount = 1;
-function Scene() {
+function Level1() {
   return (
-    <>
+    <Scene>
       <Background
         url={grassBackground}
         collisionFilterGroup={CollisionGroups.Ignore}
@@ -52,8 +53,8 @@ function Scene() {
       <Bush name="bush1" position={[1, 2, 0]} />
       <Bush name="bush2" position={[-1, -2, 0]} />
       <Player position={[0, 0, 0]} />
-      <Bat position={[2, 0, 0]} />
-      <Bat position={[4, 0, 0]} />
+      <Bat name="bat1" position={[2, 0, 0]} />
+      <Bat name="bat2" position={[4, 0, 0]} />
       {/* {Array.from(Array(EnemiesCount).keys()).map((_, index) => {
           const base = 2 + Math.random() * 2;
           const x = Math.random() > 0.5 ? base : -base;
@@ -67,7 +68,7 @@ function Scene() {
             />
           );
         })} */}
-    </>
+    </Scene>
   );
 }
 

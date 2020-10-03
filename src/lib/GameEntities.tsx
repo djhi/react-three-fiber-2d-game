@@ -5,16 +5,15 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 import { Coordinates } from "./types";
 
 export type Entity = {
   name: string;
   type: string;
-  getDisabled(): boolean;
   getPosition(): Coordinates;
-  setDisabled(disabled: boolean): void;
+  getDirection(): Coordinates;
+  getDisabled(): boolean;
 };
 
 export type GameEntitiesContextValue = {

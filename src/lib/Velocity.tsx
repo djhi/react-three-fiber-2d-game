@@ -34,6 +34,7 @@ export const useVelocity = ({
 }: VelocityOptions): VelocityApi => {
   const gameObject = useGameObject();
   const colliderApi = gameObject.getComponent<ColliderApi>(colliderName);
+  const updated = useRef(false);
 
   const velocity = useRef(new Vector3(0, 0, 0));
   const api = useMemo<VelocityApi>(
@@ -41,17 +42,21 @@ export const useVelocity = ({
       getVelocity: () => velocity.current,
       setVelocity: (newVelocity) => {
         velocity.current = newVelocity;
+        updated.current = false;
       },
     }),
     []
   );
 
   useFrame((_, delta) => {
-    colliderApi.velocity.set(
-      velocity.current.x * delta,
-      velocity.current.y * delta,
-      velocity.current.z * delta
-    );
+    if (!updated.current) {
+      colliderApi.velocity.set(
+        velocity.current.x * delta,
+        velocity.current.y * delta,
+        velocity.current.z * delta
+      );
+      updated.current = true;
+    }
   });
 
   gameObject.addComponent(name, api);

@@ -85,6 +85,7 @@ export const useMovable = ({
     return {
       accelerateTo: (direction) => {
         currentDirection.current = direction;
+        gameObject.setDirection([direction.x, direction.y, direction.z]);
         if (state.current !== "accelerate" && state.current !== "move") {
           currentSpeed.current = 25;
         }
@@ -92,12 +93,14 @@ export const useMovable = ({
       },
       decelerateTo: (direction) => {
         currentDirection.current = direction;
+        gameObject.setDirection([direction.x, direction.y, direction.z]);
         if (state.current !== "idle") {
           changeState("decelerate");
         }
       },
       moveTo: (direction, speed) => {
         currentDirection.current = direction;
+        gameObject.setDirection([direction.x, direction.y, direction.z]);
         changeState("move");
         currentSpeed.current = speed;
       },

@@ -56,7 +56,7 @@ export function Bat({ name, position, ...props }: any) {
         }
       >
         <sprite name={name} scale={[0.3, 0.3, 0.5]} center={center}>
-          <spriteMaterial map={texture} transparent />
+          <spriteMaterial map={texture} />
         </sprite>
       </Collider>
       <Velocity />
@@ -79,25 +79,6 @@ export function useBasicEnemyScript({
   const chasing = useRef(false);
 
   const movableApi = gameObject.getComponent<MovableApi>("movable");
-  const colliderApi = gameObject.getComponent<ColliderApi>("collider");
-
-  const handleCollision = (event) => {
-    if (event.body?.name === "player") {
-      const enemyDeathEffectApi = gameObject.getComponent<EnemyDeathEffectApi>(
-        "enemyDeathEffect"
-      );
-      enemyDeathEffectApi.enable(() => {
-        if (!colliderApi.ref?.current) {
-          return;
-        }
-        gameObject.setDisabled(true);
-
-        colliderApi.removeEventListener("collide", handleCollision);
-      });
-    }
-  };
-
-  colliderApi.addEventListener("collide", handleCollision);
 
   useFrame(() => {
     const player = gameEntities.getEntity("player");

@@ -7,7 +7,9 @@ import {
   AnimationPlayerApi,
   CameraFollow,
   Collider,
+  ColliderApi,
   GameObject,
+  GameObjectContextValue,
   Inputs,
   InputsApi,
   Movable,
@@ -20,6 +22,9 @@ import {
 import { CollisionGroups } from "../constants";
 import { playerAnimationsMap } from "./spriteData";
 import player from "./Player.png";
+import { EnemyDeathEffectApi } from "../Effects/EnemyDeathEffect";
+import { useGameEntities } from "../../lib/GameEntities";
+import { useScene } from "../../lib/Scene";
 
 const center = new Vector2(0.5, 0.5);
 export function Player({ name = "player", position, ...props }: any) {
@@ -56,12 +61,40 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
   const gameObject = useGameObject();
+  const gameEntities = useGameEntities();
 
   const inputsApi = gameObject.getComponent<InputsApi>("inputs");
   const movableApi = gameObject.getComponent<MovableApi>("movable");
   const animationPlayerApi = gameObject.getComponent<AnimationPlayerApi>(
     "animationPlayer"
   );
+
+  const colliderApi = gameObject.getComponent<ColliderApi>("collider");
+  const scene = useScene();
+
+  const handleCollision = (event: any) => {
+    const eventGameObject = scene.getGameObject(
+      event.body.name
+    ) as GameObjectContextValue;
+    if (eventGameObject && eventGameObject.type === "enemy") {
+      const player = gameEntities.getEntity(event.body.name);
+      if (!player) {
+        return;
+      }
+
+      const enemyDeathEffectApi = eventGameObject.getComponent<
+        EnemyDeathEffectApi
+      >("enemyDeathEffect");
+      enemyDeathEffectApi.enable(() => {
+        if (!colliderApi.ref?.current) {
+          return;
+        }
+        eventGameObject.setDisabled(true);
+      });
+    }
+  };
+
+  colliderApi.addEventListener("collide", handleCollision);
 
   useFrame(() => {
     switch (state.current) {

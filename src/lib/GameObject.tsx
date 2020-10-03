@@ -6,20 +6,24 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
 } from "react";
 import { useFrame } from "react-three-fiber";
 import { Object3D } from "three";
 import { Entity, useRegisterGameEntity } from "./GameEntities";
+import { useScene } from "./Scene";
 import { Coordinates } from "./types";
 import { getVector } from "./utils";
 
 type RegisterComponent = <T>(name: string, value: T) => void;
 type GetComponent = <T>(name: string) => T;
 
-interface GameObjectContextValue extends Entity {
+export interface GameObjectContextValue extends Entity {
   addComponent: RegisterComponent;
   getComponent: GetComponent;
   setPosition(velocity: Coordinates): void;
+  setDisabled(disabled: boolean): void;
+  setDirection(direction: Coordinates): void;
 }
 
 const GameObjectContext = createContext<GameObjectContextValue>({
@@ -30,6 +34,12 @@ const GameObjectContext = createContext<GameObjectContextValue>({
   },
   getComponent: () => {
     throw new Error("Invalid context");
+  },
+  getDirection: () => {
+    throw new Error("Invalid context");
+  },
+  setDirection: () => {
+    /* Do nothing */
   },
   getPosition: () => {
     throw new Error("Invalid context");
@@ -59,8 +69,10 @@ export function GameObject({
 }) {
   const components = useRef<{ [key: string]: any }>({});
   const position = useRef(initialPosition);
+  const direction = useRef<Coordinates>([0, 0, 0]);
   const ref = useRef<Object3D>();
   const [disabled, setDisabled] = useState(false);
+  const scene = useScene();
 
   const value = useMemo<GameObjectContextValue>(
     () => ({
@@ -72,6 +84,10 @@ export function GameObject({
       getComponent(name: string) {
         return components.current[name];
       },
+      getDirection: () => direction.current,
+      setDirection: (newDirection) => {
+        direction.current = newDirection;
+      },
       getPosition: () => position.current,
       setPosition: (newPosition) => {
         position.current = newPosition;
@@ -79,8 +95,14 @@ export function GameObject({
       getDisabled: () => disabled,
       setDisabled: (value: boolean) => setDisabled(value),
     }),
-    []
+    [disabled, name, type]
   );
+
+  useEffect(() => {
+    scene.addGameObject(value);
+
+    return () => scene.removeGameObject(name);
+  }, []);
 
   useFrame(() => {
     if (!ref.current) {
