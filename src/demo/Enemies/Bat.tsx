@@ -77,7 +77,6 @@ export function useBasicEnemyScript({
   const gameEntities = useGameEntities();
   const gameObject = useGameObject();
   const chasing = useRef(false);
-  const dead = useRef(false);
 
   const movableApi = gameObject.getComponent<MovableApi>("movable");
   const colliderApi = gameObject.getComponent<ColliderApi>("collider");
@@ -91,9 +90,7 @@ export function useBasicEnemyScript({
         if (!colliderApi.ref?.current) {
           return;
         }
-        colliderApi.ref.current.visible = false;
-        colliderApi.ref.current.parent?.remove(colliderApi.ref.current);
-        dead.current = true;
+        gameObject.setDisabled(true);
 
         colliderApi.removeEventListener("collide", handleCollision);
       });

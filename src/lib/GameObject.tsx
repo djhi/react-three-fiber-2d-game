@@ -37,6 +37,12 @@ const GameObjectContext = createContext<GameObjectContextValue>({
   setPosition: () => {
     /* Do nothing */
   },
+  getDisabled: () => {
+    throw new Error("Invalid context");
+  },
+  setDisabled: () => {
+    /* Do nothing */
+  },
 });
 
 export function GameObject({
@@ -54,6 +60,7 @@ export function GameObject({
   const components = useRef<{ [key: string]: any }>({});
   const position = useRef(initialPosition);
   const ref = useRef<Object3D>();
+  const [disabled, setDisabled] = useState(false);
 
   const value = useMemo<GameObjectContextValue>(
     () => ({
@@ -69,6 +76,8 @@ export function GameObject({
       setPosition: (newPosition) => {
         position.current = newPosition;
       },
+      getDisabled: () => disabled,
+      setDisabled: (value: boolean) => setDisabled(value),
     }),
     []
   );
@@ -85,7 +94,7 @@ export function GameObject({
   return (
     <GameObjectContext.Provider value={value}>
       <group ref={ref} position={position.current}>
-        {children}
+        {!disabled && children}
       </group>
     </GameObjectContext.Provider>
   );
