@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useFrame } from "react-three-fiber";
 import { Object3D } from "three";
-import { Entity, useRegisterGameEntity } from "./GameEntities";
 import { useScene } from "./Scene";
 import { Coordinates } from "./types";
 import { getVector } from "./utils";
@@ -18,15 +17,20 @@ import { getVector } from "./utils";
 type RegisterComponent = <T>(name: string, value: T) => void;
 type GetComponent = <T>(name: string) => T;
 
-export interface GameObjectContextValue extends Entity {
+export interface GameObjectApi {
+  name: string;
+  type: string;
   addComponent: RegisterComponent;
   getComponent: GetComponent;
+  getPosition(): Coordinates;
   setPosition(velocity: Coordinates): void;
+  getDisabled(): boolean;
   setDisabled(disabled: boolean): void;
+  getDirection: () => Coordinates;
   setDirection(direction: Coordinates): void;
 }
 
-const GameObjectContext = createContext<GameObjectContextValue>({
+const GameObjectContext = createContext<GameObjectApi>({
   name: "",
   type: "",
   addComponent: () => {
@@ -74,7 +78,7 @@ export function GameObject({
   const [disabled, setDisabled] = useState(false);
   const scene = useScene();
 
-  const value = useMemo<GameObjectContextValue>(
+  const value = useMemo<GameObjectApi>(
     () => ({
       name,
       type,
@@ -110,8 +114,6 @@ export function GameObject({
     }
     ref.current.position.copy(getVector(position.current));
   });
-
-  useRegisterGameEntity(value);
 
   return (
     <GameObjectContext.Provider value={value}>

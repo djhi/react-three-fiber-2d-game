@@ -61,7 +61,6 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
   const gameObject = useGameObject();
-  const gameEntities = useGameEntities();
 
   const inputsApi = gameObject.getComponent<InputsApi>("inputs");
   const movableApi = gameObject.getComponent<MovableApi>("movable");
@@ -77,11 +76,6 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
       event.body.name
     ) as GameObjectContextValue;
     if (eventGameObject && eventGameObject.type === "enemy") {
-      const player = gameEntities.getEntity(event.body.name);
-      if (!player) {
-        return;
-      }
-
       const enemyDeathEffectApi = eventGameObject.getComponent<
         EnemyDeathEffectApi
       >("enemyDeathEffect");

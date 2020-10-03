@@ -3,7 +3,6 @@ import { Canvas, CanvasContext } from "react-three-fiber";
 import { Physics } from "use-cannon";
 
 import { Background, Camera } from "../lib";
-import { GameEntitiesProvider } from "../lib/GameEntities";
 import { CollisionGroups } from "./constants";
 
 import grassBackground from "./World/GrassBackground.png";
@@ -31,12 +30,10 @@ function Game() {
       <ambientLight />
 
       <Suspense fallback={null}>
-        <GameEntitiesProvider>
-          <Physics gravity={[0, 0, 0]}>
-            <Camera />
-            <Level1 />
-          </Physics>
-        </GameEntitiesProvider>
+        <Physics gravity={[0, 0, 0]}>
+          <Camera />
+          <Level1 />
+        </Physics>
       </Suspense>
     </Canvas>
   );

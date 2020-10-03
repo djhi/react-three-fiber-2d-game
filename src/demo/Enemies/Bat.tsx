@@ -6,7 +6,6 @@ import {
   AnimationPlayer,
   Animations,
   Collider,
-  ColliderApi,
   GameObject,
   Movable,
   MovableApi,
@@ -15,13 +14,10 @@ import {
   useSpriteLoader,
   Velocity,
 } from "../../lib";
+import { useScene } from "../../lib/Scene";
 import { getDirectionToTarget, getDistanceToTarget } from "../../lib/utils";
 import { CollisionGroups } from "../constants";
-import { useGameEntities } from "../../lib/GameEntities";
-import {
-  EnemyDeathEffect,
-  EnemyDeathEffectApi,
-} from "../Effects/EnemyDeathEffect";
+import { EnemyDeathEffect } from "../Effects/EnemyDeathEffect";
 import enemy from "./Bat.png";
 
 const enemyAnimations: Animations = {
@@ -74,14 +70,14 @@ export type BasicEnemyOptions = {
 export function useBasicEnemyScript({
   detectionRange = 1.5,
 }: BasicEnemyOptions) {
-  const gameEntities = useGameEntities();
+  const scene = useScene();
   const gameObject = useGameObject();
   const chasing = useRef(false);
 
   const movableApi = gameObject.getComponent<MovableApi>("movable");
 
   useFrame(() => {
-    const player = gameEntities.getEntity("player");
+    const player = scene.getGameObject("player");
     if (!player) {
       return;
     }
