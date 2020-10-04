@@ -6,11 +6,11 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Entity } from "./GameEntities";
+import { GameObjectApi } from "./GameObject";
 
 type SceneApi = {
-  addGameObject: (gameObject: Entity) => void;
-  getGameObject: (name: string) => Entity | undefined;
+  addGameObject: (gameObject: GameObjectApi) => void;
+  getGameObject: (name: string) => GameObjectApi | undefined;
   removeGameObject: (name: string) => void;
 };
 const SceneContext = createContext<SceneApi>({
@@ -26,7 +26,7 @@ const SceneContext = createContext<SceneApi>({
 type SceneProps = { children: ReactNode };
 
 export const Scene = ({ children }: SceneProps): ReactElement => {
-  const gameObjectsByName = useRef<Map<string, Entity>>(new Map());
+  const gameObjectsByName = useRef<Map<string, GameObjectApi>>(new Map());
 
   const api = useMemo<SceneApi>(
     () => ({

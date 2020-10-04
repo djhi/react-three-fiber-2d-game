@@ -1,8 +1,8 @@
 import { cloneElement, MutableRefObject, ReactElement, useEffect } from "react";
 import { EventDispatcher, Object3D } from "three";
 import { Api, BoxProps, Event, useBox } from "use-cannon";
-import { useGameObject } from "./GameObject";
-import { Coordinates } from "./types";
+import { useGameObject } from "../GameObject";
+import { Coordinates } from "../types";
 
 export type ColliderOptions = BoxProps & {
   name?: string;

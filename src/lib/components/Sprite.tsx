@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Texture } from "three";
-import { useGameObject } from "./GameObject";
+import { useGameObject } from "../GameObject";
 
 export type Frame = [number, number];
 

@@ -3,7 +3,7 @@ import { useFrame } from "react-three-fiber";
 import { get } from "lodash";
 
 import { Frame, SpriteApi } from "./Sprite";
-import { useGameObject } from "./GameObject";
+import { useGameObject } from "../GameObject";
 
 export type AnimationPlayerApi = {
   setAnimation: (path: string, callback?: AnimationEndCallback) => void;
