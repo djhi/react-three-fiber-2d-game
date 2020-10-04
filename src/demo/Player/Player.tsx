@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Vector2, Vector3 } from "three";
 
@@ -68,39 +68,44 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
     "animationPlayer"
   );
 
-  const colliderApi = gameObject.getComponent<ColliderApi>("collider");
   const scene = useScene();
 
-  const handleCollision = (event: any) => {
-    const eventGameObject = scene.getGameObject(
-      event.body.name
-    ) as GameObjectApi;
+  useEffect(() => {
+    const colliderApi = gameObject.getComponent<ColliderApi>("collider");
+    const handleCollision = (event: any) => {
+      const eventGameObject = scene.getGameObject(
+        event.body.name
+      ) as GameObjectApi;
 
-    if (eventGameObject && eventGameObject.type === "enemy") {
-      const enemyDirection = getDirectionToTarget(
-        gameObject.getPosition(),
-        eventGameObject.getPosition()
-      );
+      if (eventGameObject && eventGameObject.type === "enemy") {
+        const enemyDirection = getDirectionToTarget(
+          gameObject.getPosition(),
+          eventGameObject.getPosition()
+        );
 
-      console.log(eventGameObject);
-      if (
-        lastDirection.current.equals(enemyDirection) &&
-        state.current === "attack"
-      ) {
-        const enemyDeathEffectApi = eventGameObject.getComponent<
-          EnemyDeathEffectApi
-        >("enemyDeathEffect");
-        enemyDeathEffectApi.enable(() => {
-          if (!colliderApi.ref?.current) {
-            return;
-          }
-          eventGameObject.setDisabled(true);
-        });
+        if (
+          areDirectionsFacing(lastDirection.current, enemyDirection) &&
+          state.current === "attack"
+        ) {
+          const enemyDeathEffectApi = eventGameObject.getComponent<
+            EnemyDeathEffectApi
+          >("enemyDeathEffect");
+          enemyDeathEffectApi.enable(() => {
+            if (!colliderApi.ref?.current) {
+              return;
+            }
+            eventGameObject.setDisabled(true);
+          });
+        }
       }
-    }
-  };
+    };
 
-  colliderApi.addEventListener("collide", handleCollision);
+    colliderApi.addEventListener("collide", handleCollision);
+
+    return () => {
+      colliderApi.removeEventListener("collide", handleCollision);
+    };
+  }, [scene, gameObject]);
 
   useFrame(() => {
     switch (state.current) {
@@ -235,3 +240,24 @@ export function PlayerScript(props: PlayerScriptOptions) {
   usePlayerScript(props);
   return null;
 }
+
+export const areDirectionsFacing = (
+  direction1: Vector3,
+  direction2: Vector3
+): boolean => {
+  if (
+    (direction1.x > 0 && direction2.x > 0) ||
+    (direction1.x < 0 && direction2.x < 0)
+  ) {
+    return true;
+  }
+
+  if (
+    (direction1.y > 0 && direction2.y > 0) ||
+    (direction1.y < 0 && direction2.y < 0)
+  ) {
+    return true;
+  }
+
+  return false;
+};

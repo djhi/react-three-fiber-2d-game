@@ -47,11 +47,12 @@ function Level1() {
         url={grassBackground}
         collisionFilterGroup={CollisionGroups.Ignore}
       />
-      <Bush name="bush1" position={[1, 2, 0]} />
-      <Bush name="bush2" position={[-1, -2, 0]} />
+      <Bush name="bush1" position={[1, 1, 0]} />
+      <Bush name="bush2" position={[-1, -1, 0]} />
       <Player position={[0, 0, 0]} />
-      <Bat name="bat1" position={[2, 0, 0]} />
-      <Bat name="bat2" position={[4, 0, 0]} />
+      <Bat name="bat1" position={[2, -1, 0]} />
+      <Bat name="bat2" position={[2, 0, 0]} />
+      <Bat name="bat3" position={[2, 1, 0]} />
       {/* {Array.from(Array(EnemiesCount).keys()).map((_, index) => {
           const base = 2 + Math.random() * 2;
           const x = Math.random() > 0.5 ? base : -base;
