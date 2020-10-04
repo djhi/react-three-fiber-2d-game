@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useGameObject } from "./GameObject";
+import { useGameObject } from "../GameObject";
 
 export type InputsApi = {
   isActionPressed: (action: string) => boolean;

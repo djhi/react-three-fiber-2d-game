@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Vector3 } from "three";
-import { useGameObject } from "./GameObject";
+import { useGameObject } from "../GameObject";
 import { VelocityApi } from "./Velocity";
 
 export type MovableOptions = {
