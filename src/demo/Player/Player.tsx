@@ -17,7 +17,6 @@ import {
   Sprite,
   useGameObject,
   useSpriteLoader,
-  Velocity,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
 import { playerAnimationsMap } from "./spriteData";
@@ -39,13 +38,13 @@ export function Player({ name = "player", position, ...props }: any) {
         args={[0.1, 0.1, 0.1]}
         collisionFilterGroup={CollisionGroups.Player}
         collisionFilterMask={CollisionGroups.World | CollisionGroups.Enemies}
+        linearDamping={0.9}
       >
         <sprite name={name} center={center}>
           <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
-      <Velocity />
-      <Movable maxSpeed={90} acceleration={1.25} friction={0.8} />
+      <Movable maxSpeed={2} />
       <CameraFollow />
       <PlayerScript />
     </GameObject>

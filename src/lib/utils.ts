@@ -9,7 +9,7 @@ export function getVector(coordinatesOrVector: Coordinates | Vector3) {
   }
 
   const coordinates = coordinatesOrVector as Coordinates;
-  return new Vector3(coordinates[0], coordinates[1], coordinates[2]);
+  return new Vector3().fromArray(coordinates);
 }
 
 export function getDirectionToTarget(
