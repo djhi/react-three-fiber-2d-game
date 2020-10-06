@@ -2,7 +2,6 @@
 
 Things I plan to either do or experiment with, in no particular order
 
-- Checkout whether velocity, speed, acceleration and friction (either applied via inputs for player or code for npcs/enemies) can all be handled through use-cannon
 - Tilemaps: probably gonna steal @coldi code
 - Auto tilemaps: Gonna assume a format for this, at least at the beginning
 - Stats: character and enemies stats for example (health, maxhealth, speed, damage, etc.)
