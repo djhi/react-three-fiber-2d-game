@@ -54,7 +54,7 @@ export function Bat({ name, position, ...props }: any) {
           <spriteMaterial map={texture} />
         </sprite>
       </Collider>
-      <Movable maxSpeed={1.5} />
+      <Movable maxSpeed={70} />
       <EnemyDeathEffect />
       <BasicEnemyScript />
     </GameObject>

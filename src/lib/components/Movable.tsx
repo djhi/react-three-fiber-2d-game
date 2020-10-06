@@ -22,7 +22,7 @@ export type MovableApi = {
 type State = "accelerate" | "decelerate" | "move" | "idle";
 
 export const useMovable = ({
-  acceleration = 1.01,
+  acceleration = 3,
   friction = -0.9,
   maxSpeed = 3,
   name = "movable",
@@ -46,8 +46,8 @@ export const useMovable = ({
 
     currentAccelerationTime.current += delta * 1000;
     colliderApi.velocity.set(
-      currentDirection.current.x * currentSpeed.current,
-      currentDirection.current.y * currentSpeed.current,
+      currentDirection.current.x * currentSpeed.current * delta,
+      currentDirection.current.y * currentSpeed.current * delta,
       0
     );
 
@@ -84,10 +84,15 @@ export const useMovable = ({
       accelerateTo: (direction) => {
         currentDirection.current = direction;
         gameObject.setDirection([direction.x, direction.y, direction.z]);
-        if (state.current !== "accelerate" && state.current !== "move") {
-          currentSpeed.current = 1;
+        if (state.current === "move") {
+          currentSpeed.current = clamp(0, currentSpeed.current, maxSpeed);
+        } else {
+          if (state.current !== "accelerate") {
+            currentSpeed.current = maxSpeed / 4;
+          }
         }
         changeState("accelerate");
+        speedOverride.current = false;
       },
       decelerateTo: (direction) => {
         currentDirection.current = direction;
@@ -95,12 +100,14 @@ export const useMovable = ({
         if (state.current !== "idle") {
           changeState("decelerate");
         }
+        speedOverride.current = false;
       },
       moveTo: (direction, speed) => {
         currentDirection.current = direction;
         gameObject.setDirection([direction.x, direction.y, direction.z]);
-        changeState("move");
         currentSpeed.current = speed;
+        speedOverride.current = true;
+        changeState("move");
       },
       stop: () => {
         state.current = "idle";
