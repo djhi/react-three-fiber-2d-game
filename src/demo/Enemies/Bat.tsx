@@ -12,7 +12,6 @@ import {
   Sprite,
   useGameObject,
   useSpriteLoader,
-  Velocity,
 } from "../../lib";
 import { useScene } from "../../lib/Scene";
 import { getDirectionToTarget, getDistanceToTarget } from "../../lib/utils";
@@ -55,8 +54,7 @@ export function Bat({ name, position, ...props }: any) {
           <spriteMaterial map={texture} />
         </sprite>
       </Collider>
-      <Velocity />
-      <Movable maxSpeed={60} acceleration={1.25} friction={0.8} />
+      <Movable maxSpeed={70} />
       <EnemyDeathEffect />
       <BasicEnemyScript />
     </GameObject>

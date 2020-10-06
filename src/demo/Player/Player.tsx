@@ -17,7 +17,6 @@ import {
   Sprite,
   useGameObject,
   useSpriteLoader,
-  Velocity,
 } from "../../lib";
 import { CollisionGroups } from "../constants";
 import { playerAnimationsMap } from "./spriteData";
@@ -39,13 +38,14 @@ export function Player({ name = "player", position, ...props }: any) {
         args={[0.1, 0.1, 0.1]}
         collisionFilterGroup={CollisionGroups.Player}
         collisionFilterMask={CollisionGroups.World | CollisionGroups.Enemies}
+        mass={5}
+        linearDamping={0.9}
       >
         <sprite name={name} center={center}>
           <spriteMaterial map={texture} transparent />
         </sprite>
       </Collider>
-      <Velocity />
-      <Movable maxSpeed={90} acceleration={1.25} friction={0.8} />
+      <Movable maxSpeed={90} />
       <CameraFollow />
       <PlayerScript />
     </GameObject>
@@ -56,7 +56,7 @@ export type PlayerScriptOptions = {
   rollSpeed?: number;
 };
 
-export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
+export const usePlayerScript = ({ rollSpeed = 150 }: PlayerScriptOptions) => {
   const state = useRef<"move" | "attack" | "roll">("move");
   const lastDirection = useRef<Vector3>(new Vector3(1, 0, 0));
   const lastInputVector = useRef<Vector3>(new Vector3(0, 0, 0));
@@ -110,35 +110,42 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
   useFrame(() => {
     switch (state.current) {
       case "move": {
-        const inputVector = new Vector3(
+        lastInputVector.current.set(
           inputsApi.getActionStrength("right") -
             inputsApi.getActionStrength("left"),
           inputsApi.getActionStrength("up") -
             inputsApi.getActionStrength("down"),
           0
-        ).normalize();
+        );
 
-        lastInputVector.current = inputVector;
-
-        if (inputVector.x !== 0 || inputVector.y !== 0) {
+        if (
+          lastInputVector.current.x !== 0 ||
+          lastInputVector.current.y !== 0
+        ) {
           // Ensure that if the player is moving up and left/right
           // the left/right animation take precedence
-          if (inputVector.y > 0 && inputVector.x === 0) {
-            lastDirection.current = new Vector3(0, 1, 0);
+          if (
+            lastInputVector.current.y > 0 &&
+            lastInputVector.current.x === 0
+          ) {
+            lastDirection.current.set(0, 1, 0);
             animationPlayerApi.setAnimation("move.up");
           }
           // Ensure that if the player is moving down and left/right
           // the left/right animation take precedence
-          if (inputVector.y < 0 && inputVector.x === 0) {
-            lastDirection.current = new Vector3(0, -1, 0);
+          if (
+            lastInputVector.current.y < 0 &&
+            lastInputVector.current.x === 0
+          ) {
+            lastDirection.current.set(0, -1, 0);
             animationPlayerApi.setAnimation("move.down");
           }
-          if (inputVector.x > 0) {
-            lastDirection.current = new Vector3(1, inputVector.y, 0);
+          if (lastInputVector.current.x > 0) {
+            lastDirection.current.set(1, lastInputVector.current.y, 0);
             animationPlayerApi.setAnimation("move.right");
           }
-          if (inputVector.x < 0) {
-            lastDirection.current = new Vector3(-1, inputVector.y, 0);
+          if (lastInputVector.current.x < 0) {
+            lastDirection.current.set(-1, lastInputVector.current.y, 0);
             animationPlayerApi.setAnimation("move.left");
           }
 
@@ -175,25 +182,21 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
 
         movableApi.decelerateTo(lastDirection.current);
 
+        const handleAttackEnded = () => {
+          state.current = "move";
+        };
+
         if (lastDirection.current.y > 0) {
-          animationPlayerApi.setAnimation("attack.up", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("attack.up", handleAttackEnded);
         }
         if (lastDirection.current.y < 0) {
-          animationPlayerApi.setAnimation("attack.down", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("attack.down", handleAttackEnded);
         }
         if (lastDirection.current.x > 0) {
-          animationPlayerApi.setAnimation("attack.right", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("attack.right", handleAttackEnded);
         }
         if (lastDirection.current.x < 0) {
-          animationPlayerApi.setAnimation("attack.left", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("attack.left", handleAttackEnded);
         }
         break;
       }
@@ -204,32 +207,27 @@ export const usePlayerScript = ({ rollSpeed = 120 }: PlayerScriptOptions) => {
 
         movableApi.moveTo(lastDirection.current, rollSpeed);
 
+        const handleRollEnded = () => {
+          state.current = "move";
+        };
+
         if (lastDirection.current.y > 0) {
-          animationPlayerApi.setAnimation("roll.up", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("roll.up", handleRollEnded);
           return;
         }
         if (lastDirection.current.y < 0) {
-          animationPlayerApi.setAnimation("roll.down", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("roll.down", handleRollEnded);
           return;
         }
         if (lastDirection.current.x > 0) {
-          animationPlayerApi.setAnimation("roll.right", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("roll.right", handleRollEnded);
           return;
         }
         if (lastDirection.current.x < 0) {
-          animationPlayerApi.setAnimation("roll.left", () => {
-            state.current = "move";
-          });
+          animationPlayerApi.setAnimation("roll.left", handleRollEnded);
           return;
         }
 
-        state.current = "move";
         break;
       }
     }

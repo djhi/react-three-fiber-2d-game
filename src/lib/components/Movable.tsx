@@ -2,14 +2,14 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "react-three-fiber";
 import { Vector3 } from "three";
 import { useGameObject } from "../GameObject";
-import { VelocityApi } from "./Velocity";
+import { ColliderApi } from "./Collider";
 
 export type MovableOptions = {
   acceleration?: number;
   friction?: number;
   maxSpeed?: number;
   name?: string;
-  velocityName?: string;
+  colliderName?: string;
 };
 
 export type MovableApi = {
@@ -22,35 +22,34 @@ export type MovableApi = {
 type State = "accelerate" | "decelerate" | "move" | "idle";
 
 export const useMovable = ({
-  acceleration = 1.25,
-  friction = 0.8,
-  maxSpeed = 100,
+  acceleration = 3,
+  friction = -0.9,
+  maxSpeed = 3,
   name = "movable",
-  velocityName = "velocity",
+  colliderName = "collider",
 }: MovableOptions): MovableApi => {
   const gameObject = useGameObject();
-  const velocityApi = gameObject.getComponent<VelocityApi>(velocityName);
   const state = useRef<State>("idle");
-  const currentSpeed = useRef(50);
+  const currentSpeed = useRef(1);
   const speedOverride = useRef(false);
   const currentDirection = useRef(new Vector3(0, 0, 0));
   const currentAccelerationTime = useRef(0);
-  const accelerationFrequency = 1000 / 15;
+  const accelerationFrequency = 1000 / 5;
 
   useFrame((_, delta) => {
+    const colliderApi = gameObject.getComponent<ColliderApi>(colliderName);
     if (state.current === "idle") {
       currentAccelerationTime.current = 0;
-      velocityApi.setVelocity(new Vector3(0, 0, 0));
+      colliderApi.velocity.set(0, 0, 0);
       return;
     }
 
     currentAccelerationTime.current += delta * 1000;
-    const newVelocity = new Vector3(
-      currentDirection.current.x * currentSpeed.current,
-      currentDirection.current.y * currentSpeed.current,
+    colliderApi.velocity.set(
+      currentDirection.current.x * currentSpeed.current * delta,
+      currentDirection.current.y * currentSpeed.current * delta,
       0
     );
-    velocityApi.setVelocity(newVelocity);
 
     if (
       currentAccelerationTime.current > accelerationFrequency &&
@@ -67,10 +66,10 @@ export const useMovable = ({
         state.current === "accelerate"
           ? Math.ceil(newSpeed)
           : Math.floor(newSpeed);
+    }
 
-      if (state.current === "decelerate" && currentSpeed.current <= 0) {
-        state.current = "idle";
-      }
+    if (state.current === "decelerate" && currentSpeed.current <= 0) {
+      state.current = "idle";
     }
   });
 
@@ -79,17 +78,21 @@ export const useMovable = ({
       if (state.current !== newState) {
         currentAccelerationTime.current = 0;
         state.current = newState;
-        speedOverride.current = newState === "move";
       }
     };
     return {
       accelerateTo: (direction) => {
         currentDirection.current = direction;
         gameObject.setDirection([direction.x, direction.y, direction.z]);
-        if (state.current !== "accelerate" && state.current !== "move") {
-          currentSpeed.current = 25;
+        if (state.current === "move") {
+          currentSpeed.current = clamp(0, currentSpeed.current, maxSpeed);
+        } else {
+          if (state.current !== "accelerate") {
+            currentSpeed.current = maxSpeed / 4;
+          }
         }
         changeState("accelerate");
+        speedOverride.current = false;
       },
       decelerateTo: (direction) => {
         currentDirection.current = direction;
@@ -97,12 +100,14 @@ export const useMovable = ({
         if (state.current !== "idle") {
           changeState("decelerate");
         }
+        speedOverride.current = false;
       },
       moveTo: (direction, speed) => {
         currentDirection.current = direction;
         gameObject.setDirection([direction.x, direction.y, direction.z]);
-        changeState("move");
         currentSpeed.current = speed;
+        speedOverride.current = true;
+        changeState("move");
       },
       stop: () => {
         state.current = "idle";
